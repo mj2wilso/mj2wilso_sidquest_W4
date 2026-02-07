@@ -44,16 +44,31 @@ class WorldLevel {
       let p = levelData.platforms[i];
       this.platforms.push(new Platform(p.x, p.y, p.w, p.h));
     }
-    // Add 3 extra platforms procedurally
-    let baseX = 80;
-    let baseY = 180;
-    let gap = 110;
+    // Add 2 extra platforms procedurally
+    let baseX = 90;
+    let baseY = 120;
+    let gap = 190;
 
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 2; i++) {
       let x = baseX + i * gap;
       let y = baseY - i * 40;
 
       this.platforms.push(new Platform(x, y, 100, 12));
+    }
+
+    // Triangle obstacles (array-based, loop-generated)
+    this.triangles = [];
+
+    let ground = this.platforms[0];
+    let size = 30;
+    let spacing = ground.w / 3; // spread them out
+
+    for (let i = 1; i <= 2; i++) {
+      this.triangles.push({
+        x: ground.x + spacing * i,
+        y: ground.y,
+        size: size,
+      });
     }
   }
 
@@ -65,6 +80,12 @@ class WorldLevel {
     fill(this.theme.platform);
     for (let i = 0; i < this.platforms.length; i++) {
       this.platforms[i].draw();
+    }
+
+    fill(200, 50, 50);
+
+    for (let t of this.triangles) {
+      triangle(t.x - t.size / 2, t.y, t.x + t.size / 2, t.y, t.x, t.y - t.size);
     }
   }
 
