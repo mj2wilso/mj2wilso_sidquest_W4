@@ -82,25 +82,28 @@ class BlobPlayer {
   Input is polled with keyIsDown to get smooth movement (held keys).
   This keeps the behavior aligned with your original blob example. 
   */
-  update(platforms) {
-    // 1) Horizontal input (A/D or arrows)
+  update(platforms, triangleBoxes = []) {
+    // --- Combine collidables for both horizontal and vertical collisions ---
+    const collidables = [...platforms, ...triangleBoxes];
+
+    // 1) Horizontal input
     let move = 0;
     if (keyIsDown(65) || keyIsDown(LEFT_ARROW)) move -= 1;
     if (keyIsDown(68) || keyIsDown(RIGHT_ARROW)) move += 1;
 
-    // 2) Apply horizontal acceleration based on input
+    // 2) Acceleration
     this.vx += this.accel * move;
 
-    // 3) Apply friction (ground vs air)
+    // 3) Friction
     this.vx *= this.onGround ? this.frictionGround : this.frictionAir;
 
-    // 4) Clamp max run speed
+    // 4) Clamp max run
     this.vx = constrain(this.vx, -this.maxRun, this.maxRun);
 
-    // 5) Apply gravity every frame
+    // 5) Gravity
     this.vy += this.gravity;
 
-    // 6) Build an AABB around the blob (center/radius -> box)
+    // 6) Build AABB box
     let box = {
       x: this.x - this.r,
       y: this.y - this.r,
@@ -108,50 +111,42 @@ class BlobPlayer {
       h: this.r * 2,
     };
 
-    // 7) Move in X and resolve collisions
+    // --- Horizontal collision ---
     box.x += this.vx;
-
-    for (const s of platforms) {
+    for (const s of collidables) {
       if (overlapAABB(box, s)) {
-        // If moving right, snap to the left side of the platform.
         if (this.vx > 0) box.x = s.x - box.w;
-        // If moving left, snap to the right side of the platform.
         else if (this.vx < 0) box.x = s.x + s.w;
-
-        // Cancel horizontal velocity after collision.
         this.vx = 0;
       }
     }
 
-    // 8) Move in Y and resolve collisions
+    // --- Vertical collision ---
     box.y += this.vy;
-
-    // Reset and recompute onGround each frame during Y resolution.
     this.onGround = false;
-
-    for (const s of platforms) {
+    for (const s of collidables) {
       if (overlapAABB(box, s)) {
         if (this.vy > 0) {
-          // Falling: snap to platform top
+          // falling
           box.y = s.y - box.h;
           this.vy = 0;
           this.onGround = true;
         } else if (this.vy < 0) {
-          // Rising: snap to platform bottom (head bump)
+          // rising
           box.y = s.y + s.h;
           this.vy = 0;
         }
       }
     }
 
-    // 9) Write back blob center from box position
+    // 9) Write back center
     this.x = box.x + box.w / 2;
     this.y = box.y + box.h / 2;
 
-    // 10) Optional: keep player within canvas horizontally.
+    // 10) Constrain horizontally
     this.x = constrain(this.x, this.r, width - this.r);
 
-    // 11) Advance blob animation time
+    // 11) Animation
     this.t += this.tSpeed;
   }
 

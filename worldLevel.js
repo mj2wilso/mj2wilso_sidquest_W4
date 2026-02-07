@@ -89,6 +89,15 @@ class WorldLevel {
     }
   }
 
+  getTriangleBoxes() {
+    return this.triangles.map((t) => ({
+      x: t.x - t.size / 2,
+      y: t.y - t.size, // top of triangle
+      w: t.size,
+      h: t.size,
+    }));
+  }
+
   // Used by your sketch to size the canvas
   inferWidth(defaultW) {
     let maxX = defaultW;

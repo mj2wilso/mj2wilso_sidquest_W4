@@ -40,14 +40,19 @@ function setup() {
 }
 
 function draw() {
-  // 1) Draw the world (background + platforms)
+  // 1) Draw the world (background + platforms + triangles)
   world.drawWorld();
 
-  // 2) Update and draw the player on top of the world
-  player.update(world.platforms);
+  // 2) Get triangle bounding boxes
+  const triangleBoxes = world.getTriangleBoxes();
+
+  // 3) Update player with both platforms and triangle boxes
+  player.update(world.platforms, triangleBoxes);
+
+  // 4) Draw the player on top
   player.draw(world.theme.blob);
 
-  // 3) HUD
+  // 5) HUD
   fill(0);
   text(world.name, 10, 18);
   text("Move: A/D or ←/→ • Jump: Space/W/↑ • Next: N", 10, 36);
